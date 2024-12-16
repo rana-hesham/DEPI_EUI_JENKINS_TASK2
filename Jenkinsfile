@@ -1,40 +1,34 @@
 pipeline {
     agent any
     stages {
-        stage(lint) {
+        stage(run app) {
             steps {
-                sh 'chmod +x gradlew'
-                sh './gradlew lint'
+                sh 'cd MyApp/'
+                sh 'dotnet build'
+                sh 'sudo dotnet publish -c Release -o /var/www/ --runtime linux-x64'
+                sh 'sudo systemctl daemon-reload'
+                sh 'sudo systemctl start app'
+                sh 'sudo systemctl status app'
             }
         }
-        stage(unit_test) {
+        stage(build image) {
             steps {
-                sh './gradlew test'
+                sh 'cd MyApp/'
+                sh 'docker build -t mydotnetapp .'
             }
         }
-        stage(sonar_qube) {
+        stage(run container) {
             steps {
-                withSonarQubeEnv('SonarQube') {
-                    sh "./gradlew sonarqube"
+                sh 'sudo docker run -d -p 8080:80 --name dotnet mydotnetapp'
                 }
             }
         }
-        stage(build) {
+        stage(push to dockerhub) {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'docker-hub', usernameVariable: 'username', passwordVariable: 'pass')]) {
-                sh 'docker login -u ${username} -p ${pass}'
-                sh 'docker build --pull --rm -f "Dockerfile" -t ranahesham/springbootapp:v1.2 "."'
-                sh 'docker image push ranahesham/springbootapp:v1.2'
-                }    
-            }                                    
-        }
-        stage(dev_deployment) {
-            steps {
-                withKubeConfig([credentialsId: 'mykubeconfig']) {
-                    sh 'kubectl delete deployment dev-deployment -n=dev'
-                    sh 'kubectl create deployment --image=ranahesham/springbootapp:v1.2 dev-deployment --namespace=dev'
+                sh 'sudo docker push ranahesham/mydotnetapp:byjenkins'
                 }
-            }
+            }                                    
         }
     }
 }
