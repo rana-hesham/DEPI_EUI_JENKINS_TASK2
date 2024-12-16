@@ -1,6 +1,14 @@
 pipeline {
     agent any
     stages {
+        stage(clone code) {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'github_user_password', usernameVariable: 'username', passwordVariable: 'pass')]) {
+                sh 'cd /home/rana/Desktop/'
+                sh 'git cilone git@github.com:rana-hesham/DEPI_EUI_JENKINS_TASK2.git'
+                }
+            }
+        }        
         stage(run app) {
             steps {
                 sh 'cd MyApp/'
