@@ -5,7 +5,7 @@ pipeline {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'github_user_password', usernameVariable: 'username', passwordVariable: 'pass')]) {
                 sh 'cd /home/rana/Desktop/'
-                sh 'git cilone git@github.com:rana-hesham/DEPI_EUI_JENKINS_TASK2.git'
+                sh 'git clone git@github.com:rana-hesham/DEPI_EUI_JENKINS_TASK2.git'
                 }
             }
         }        
