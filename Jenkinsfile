@@ -1,14 +1,6 @@
 pipeline {
     agent any
     stages {
-        stage(clone code) {
-            steps {
-                withCredentials([usernamePassword(credentialsId: 'github_user_password', usernameVariable: 'username', passwordVariable: 'pass')]) {
-                sh 'cd /home/rana/Desktop/'
-                sh 'git clone git@github.com:rana-hesham/DEPI_EUI_JENKINS_TASK2.git'
-                }
-            }
-        }        
         stage(run app) {
             steps {
                 sh 'cd MyApp/'
@@ -21,7 +13,7 @@ pipeline {
         }
         stage(build image) {
             steps {
-                sh 'cd MyApp/'
+                sh 'sudo usermod -aG docker $USER'
                 sh 'docker build -t mydotnetapp .'
             }
         }
@@ -34,6 +26,7 @@ pipeline {
         stage(push to dockerhub) {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'docker-hub', usernameVariable: 'username', passwordVariable: 'pass')]) {
+                sh 'docker login -u ${username} -p ${pass}'
                 sh 'sudo docker push ranahesham/mydotnetapp:byjenkins'
                 }
             }                                    
